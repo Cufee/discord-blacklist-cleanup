@@ -1,5 +1,5 @@
 import { Bot } from "./bot.ts";
-import { Discord } from "./discord.ts";
+import { Discord, Profile } from "./discord.ts";
 import { getCachedProfile, saveProfileCache } from "./store.ts";
 
 const notify = async (bot: Bot | null, message: string) => {
@@ -46,21 +46,45 @@ export const cleanup = async (discord: Discord, bot: Bot | null) => {
   }
 
   const blockedUsers = relationships.data.filter((r) => r.type === 2);
+  const workers: (() => void)[] = [];
+
   for (let i = 0; i < blockedUsers.length - 1; i++) {
     const rel = blockedUsers[i];
-    setTimeout(async () => {
-      console.debug("looking up user profile", rel.id);
-      let profileCache = await getCachedProfile(rel.user.id);
+
+    let profileCache = await getCachedProfile(rel.user.id);
+    if (profileCache.ok && !shouldDelete(profileCache.data)) {
+      console.debug(
+        `(${i + 1}/${blockedUsers.length})`,
+        "skipped (cached)",
+        rel.id,
+      );
+      continue;
+    }
+
+    workers.push(async () => {
+      console.debug(
+        `(${i + 1}/${blockedUsers.length})`,
+        "looking up user profile",
+        rel.id,
+      );
       if (!profileCache.ok) {
         // user profile not in cache
         const profile = await discord.getUserProfile(rel.user.id);
         if (!profile.ok) {
           if (profile.error === "too many requests") {
-            console.error("too many requests", `retry in ${profile.context}`);
+            console.error(
+              `(${i + 1}/${blockedUsers.length})`,
+              "too many requests",
+              `retry in ${profile.context}`,
+            );
             Deno.exit(1);
           }
           if (profile.error === "not found") {
-            console.debug("deleting a relationship (user deleted)", rel.id);
+            console.debug(
+              `(${i + 1}/${blockedUsers.length})`,
+              "deleting a relationship (user deleted)",
+              rel.id,
+            );
             await discord.deleteRelationship(rel.id);
             return;
           }
@@ -75,14 +99,25 @@ export const cleanup = async (discord: Discord, bot: Bot | null) => {
         }
       }
 
-      // has no mutual servers
-      if (profileCache.data.mutual_guilds.length === 0) {
-        console.debug("deleting a relationship (no mutuals)", rel.id);
+      if (shouldDelete(profileCache.data)) {
+        console.debug(
+          `(${i + 1}/${blockedUsers.length})`,
+          "deleting a relationship",
+          rel.id,
+        );
         await discord.deleteRelationship(rel.id);
         return;
       }
 
       console.debug("skipped", rel.id);
-    }, i * 3000); // this can be further tweaked, sub 2000 is likely to cause a rate limit from Cloudflare
+    });
   }
+
+  for (let i = 0; i < workers.length - 1; i++) {
+    setTimeout(workers[i], i * 3000); // this can be further tweaked, sub 2000 is likely to cause a rate limit from Cloudflare
+  }
+};
+
+const shouldDelete = (profile: Profile): boolean => {
+  return profile.mutual_guilds.length === 0;
 };
