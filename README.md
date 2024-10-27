@@ -5,4 +5,4 @@ This script is extremely simple - if a user you have blocked was deleted or does
 
 ## Running the script:
 - Create a `.env` file and set the `DISCORD_USER_TOKEN` to your user authorization token (retrieved from discord.com)
-- Run `deno run -A main.ts`
+- Run `deno task start`

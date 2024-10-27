@@ -1,0 +1,8 @@
+{
+  "unstable": [
+    "kv"
+  ],
+  "tasks": {
+    "start": "deno run -A --env-file main.ts "
+  }
+}

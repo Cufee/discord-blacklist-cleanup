@@ -1,5 +1,6 @@
 import { Bot } from "./bot.ts";
 import { Discord } from "./discord.ts";
+import { getCachedProfile, saveProfileCache } from "./store.ts";
 
 const notify = async (bot: Bot, message: string) => {
   const channel = Deno.env.get("NOTIFY_CHANNEL_ID") || "";
@@ -44,45 +45,44 @@ export const cleanup = async (discord: Discord, bot: Bot) => {
     );
   }
 
-  // shuffle to avoid re-checking the same users on each run in the same order
-  const blockedUsers = shuffle(relationships.data.filter((r) => r.type === 2));
-
+  const blockedUsers = relationships.data.filter((r) => r.type === 2);
   for (let i = 0; i < blockedUsers.length - 1; i++) {
     const rel = blockedUsers[i];
     setTimeout(async () => {
       console.debug("looking up user profile", rel.id);
-      const profile = await discord.getUserProfile(rel.user.id);
-      if (!profile.ok) {
-        if (profile.error === "too many requests") {
-          console.error("too many requests", `retry in ${profile.context}`);
-          Deno.exit(1);
-        }
-
-        if (profile.error === "not found") {
-          console.debug("deleting a relationship (user deleted)", rel.id);
-          await discord.deleteRelationship(rel.id);
+      let profileCache = await getCachedProfile(rel.user.id);
+      if (!profileCache.ok) {
+        // user profile not in cache
+        const profile = await discord.getUserProfile(rel.user.id);
+        if (!profile.ok) {
+          if (profile.error === "too many requests") {
+            console.error("too many requests", `retry in ${profile.context}`);
+            Deno.exit(1);
+          }
+          if (profile.error === "not found") {
+            console.debug("deleting a relationship (user deleted)", rel.id);
+            await discord.deleteRelationship(rel.id);
+            return;
+          }
+          notify(bot, "failed to get user profile for " + rel.user.id);
           return;
         }
-        notify(bot, "failed to get user profile for " + rel.user.id);
-        return;
+
+        profileCache = await saveProfileCache(profile.data);
+        if (!profileCache.ok) {
+          notify(bot, "failed to save user profile cache for " + rel.user.id);
+          return;
+        }
       }
 
       // has no mutual servers
-      if (profile.data.mutual_guilds.length === 0) {
+      if (profileCache.data.mutual_guilds.length === 0) {
         console.debug("deleting a relationship (no mutuals)", rel.id);
         await discord.deleteRelationship(rel.id);
         return;
       }
 
       console.debug("skipped", rel.id);
-    }, i * 5000);
+    }, i * 3000);
   }
 };
-
-function shuffle<T>(array: T[]) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
-}

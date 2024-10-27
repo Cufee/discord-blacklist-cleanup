@@ -1,0 +1,48 @@
+{
+  "version": "4",
+  "specifiers": {
+    "npm:@discordeno/bot@*": "19.0.0-next.2d02c32"
+  },
+  "npm": {
+    "@discordeno/bot@19.0.0-next.2d02c32": {
+      "integrity": "sha512-lLGC469b/0rOQhVt4n1CnhDvvhfz28zaXhprWiN4u5FTlIuQZLxXanVJqynhi7ecG+4U12DM1umHv9scJA0JgQ==",
+      "dependencies": [
+        "@discordeno/gateway",
+        "@discordeno/rest",
+        "@discordeno/types",
+        "@discordeno/utils"
+      ]
+    },
+    "@discordeno/gateway@19.0.0-next.2d02c32": {
+      "integrity": "sha512-U6HnFct+hnhvJ+rUiT/laXvkx0ZiYNDa7MXmqLq8tDYjTwjxoNGEaT+IhtP9nbfz3Du74Bb5g5ur4wfopjlevw==",
+      "dependencies": [
+        "@discordeno/types",
+        "@discordeno/utils",
+        "fzstd",
+        "ws"
+      ]
+    },
+    "@discordeno/rest@19.0.0-next.2d02c32": {
+      "integrity": "sha512-agcFjtb7dH7aGCh3mSKxXpp9yZx4XtN7C8WR7Ncg8j6zZwZ1kYmH+ZJrwj4OK8DOJeqIb1Nnd6l5FlfYU0tOMg==",
+      "dependencies": [
+        "@discordeno/types",
+        "@discordeno/utils"
+      ]
+    },
+    "@discordeno/types@19.0.0-next.2d02c32": {
+      "integrity": "sha512-7xjmCYjcLcnSHyktEcDkjbO4oPf06zJYajbaOeaM5DSWVV0nKPOHmQWgfr5kEXGFdGVhK1VFvcr4wTQ5bz/Wyg=="
+    },
+    "@discordeno/utils@19.0.0-next.2d02c32": {
+      "integrity": "sha512-GOJMTaMDyC7fv4UmhbLKjBp1pbkp6X+C16tqFyJcFWhaaPIjHLEvytfKMKQ9/x42oTqktwLFVdMDS7JLO3scNw==",
+      "dependencies": [
+        "@discordeno/types"
+      ]
+    },
+    "fzstd@0.1.1": {
+      "integrity": "sha512-dkuVSOKKwh3eas5VkJy1AW1vFpet8TA/fGmVA5krThl8YcOVE/8ZIoEA1+U1vEn5ckxxhLirSdY837azmbaNHA=="
+    },
+    "ws@8.18.0": {
+      "integrity": "sha512-8VbfWfHLbbwu3+N6OKsOMpBdT4kXPDDB9cJk2bJ6mh9ucxdlnNvH1e+roYkKmN9Nxw2yjz7VzeO9oOz2zJ04Pw=="
+    }
+  }
+}
