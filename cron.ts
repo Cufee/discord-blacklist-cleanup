@@ -83,6 +83,6 @@ export const cleanup = async (discord: Discord, bot: Bot) => {
       }
 
       console.debug("skipped", rel.id);
-    }, i * 3000);
+    }, i * 3000); // this can be further tweaked, sub 2000 is likely to cause a rate limit from Cloudflare
   }
 };
