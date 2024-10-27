@@ -2,11 +2,11 @@ import { Bot } from "./bot.ts";
 import { Discord } from "./discord.ts";
 import { getCachedProfile, saveProfileCache } from "./store.ts";
 
-const notify = async (bot: Bot, message: string) => {
+const notify = async (bot: Bot | null, message: string) => {
   const channel = Deno.env.get("NOTIFY_CHANNEL_ID") || "";
-  if (!channel) {
+  if (!channel || !bot) {
     console.error(
-      "failed to send a notification to channel - channel id not provided",
+      "failed to send a notification to channel - notifications are not configured",
       "message: " + message,
     );
     return;
@@ -36,7 +36,7 @@ export const startCronJob = (discord: Discord, bot: Bot) => {
   });
 };
 
-export const cleanup = async (discord: Discord, bot: Bot) => {
+export const cleanup = async (discord: Discord, bot: Bot | null) => {
   const relationships = await discord.getRelationships();
   if (!relationships.ok) {
     return await notify(
