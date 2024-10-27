@@ -109,7 +109,7 @@ export const cleanup = async (discord: Discord, bot: Bot | null) => {
         return;
       }
 
-      console.debug("skipped", rel.id);
+      console.debug(`(${i + 1}/${blockedUsers.length})`, "skipped", rel.id);
     });
   }
 
